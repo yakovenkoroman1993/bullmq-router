@@ -1,15 +1,14 @@
 import { Queue, type QueueOptions } from "bullmq";
 
-export class QueueManager{
-  static #instances: Record<string, Queue> = {}
+class QueueManagerInternal {
+  #instances: Record<string, Queue> = {}
+  #queueOptions: Record<string, QueueOptions | undefined> = {}
 
-  static #queueOptions: Record<string, QueueOptions | undefined> = {}
-
-  static addOptions(queueName: string, options: QueueOptions) {
+  addOptions(queueName: string, options: QueueOptions) {
     this.#queueOptions[queueName] = options
   }
-  
-  static getQueue(queueName: string) {
+
+  getQueue(queueName: string) {
     const queueOptions = this.#queueOptions[queueName]
 
     if (!queueOptions?.connection) {
@@ -23,3 +22,10 @@ export class QueueManager{
     return this.#instances[queueName];
   }
 }
+
+const GLOBAL_KEY = Symbol.for("bullmq-router.QueueManager")
+
+export const QueueManager = (
+  (globalThis as unknown as Record<symbol, QueueManagerInternal>)[GLOBAL_KEY] ??= new QueueManagerInternal()
+)
+

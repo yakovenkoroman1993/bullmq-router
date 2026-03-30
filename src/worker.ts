@@ -3,16 +3,16 @@ import { JOB_POP } from "./constants.js";
 import { Worker, type Job, type WorkerOptions } from "bullmq";
 import { type QueueJobDefinition } from "./job.js";
 
-export class WorkerManager {
-  static #instances: Record<string, Worker> = {}
+export class WorkerManagerInternal {
+  #instances: Record<string, Worker> = {}
 
-  static #workerOptions: Record<string, WorkerOptions | undefined> = {}
+  #workerOptions: Record<string, WorkerOptions | undefined> = {}
 
-  static addOptions(queueName: string, options: WorkerOptions) {
+  addOptions(queueName: string, options: WorkerOptions) {
     this.#workerOptions[queueName] = options
   }
 
-  static getWorker<R extends object>(
+  getWorker<R extends object>(
     options: {
       queueName: string
       router: R
@@ -56,3 +56,8 @@ export class WorkerManager {
   }
 }
 
+const GLOBAL_KEY = Symbol.for("bullmq-router.WorkerManager")
+
+export const WorkerManager = (
+  (globalThis as unknown as Record<symbol, WorkerManagerInternal>)[GLOBAL_KEY] ??= new WorkerManagerInternal()
+)
