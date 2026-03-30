@@ -209,9 +209,17 @@ Each top-level key in the router is treated as a separate BullMQ queue name.
 ## Deterministic Job IDs
 
 When `jobIdComponents` is set, the router builds a stable job ID from the job path and the specified data fields:
+```
+export default defineJob<{ to: string; subject: string }>(async (job) => {
+  await sendEmail(job.data)
+})({
+  jobIdComponents: ["to"]
+})
 
 ```
-email.send.user@example-com   // sanitized to safe characters
+
+```
+result ID: "email.send" + "." + "user@example-com"   // sanitized to safe characters
 ```
 
 This allows deduplication, replacement, and cancellation by data rather than raw ID.
