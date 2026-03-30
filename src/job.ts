@@ -7,7 +7,7 @@ type Add = ReturnType<typeof QueueManager.getQueue>["add"];
 type AddBulk = ReturnType<typeof QueueManager.getQueue>["addBulk"];
 
 export type QueueJobDefinition = ReturnType<ReturnType<typeof defineJob>>;
-export type FullJob = ReturnType<ReturnType<ReturnType<typeof defineJob>>["getFullJob"]>
+export type FullJob = NonNullable<Awaited<ReturnType<ReturnType<ReturnType<typeof defineJob>>["getFullJob"]>>>
 
 /**
  * Factory that registers a job processor and returns a configurator function.
