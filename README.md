@@ -20,9 +20,7 @@ import { defineJob } from '@yakocloud/bullmq-router'
 
 export default defineJob<{ to: string; subject: string }>(async (job) => {
   await sendEmail(job.data)
-})({
-  jobIdComponents: ['to'],
-})
+})()
 ```
 
 **2. Build the router**
@@ -79,8 +77,6 @@ import { router } from './router.js'
 
 setupBullmqRouter(router, {
   connection: { host: 'localhost', port: 6379 },
-  queueOptions: {},
-  workerOptions: {},
 })
 ```
 
@@ -203,7 +199,7 @@ Registers queues and workers for every top-level key in the router.
 | `router` | `object` | The router created by `createRouter` |
 | `connection` | `ConnectionOptions` | Default Redis connection for all queues and workers |
 | `queueOptions` | `Partial<Record<keyof R, QueueOptions>>` | Per-queue overrides |
-| `workerOptions` | `Partial<Record<keyof R, QueueBaseOptions>>` | Per-worker overrides |
+| `workerOptions` | `Partial<Record<keyof R, WorkerOptions>>` | Per-worker overrides |
 
 Each top-level key in the router is treated as a separate BullMQ queue name.
 

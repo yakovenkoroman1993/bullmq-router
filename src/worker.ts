@@ -1,14 +1,14 @@
 import { get } from "./utils.js";
 import { JOB_POP } from "./constants.js";
-import { type QueueBaseOptions, Worker, type Job } from "bullmq";
+import { Worker, type Job, type WorkerOptions } from "bullmq";
 import { type QueueJobDefinition } from "./job.js";
 
 export class WorkerManager {
   static #instances: Record<string, Worker> = {}
 
-  static #workerOptions: Record<string, QueueBaseOptions | undefined> = {}
+  static #workerOptions: Record<string, WorkerOptions | undefined> = {}
 
-  static addOptions(queueName: string, options: QueueBaseOptions) {
+  static addOptions(queueName: string, options: WorkerOptions) {
     this.#workerOptions[queueName] = options
   }
 

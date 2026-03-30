@@ -17,16 +17,24 @@ setupBullmqRouter(router, {
   connection: {},
   queueOptions: {
     abcd: {
-      skipMetasUpdate: true
+      defaultJobOptions: {
+        removeOnFail: {
+          count: 100
+        }
+      }
     },
     abcd2: {
       defaultJobOptions: {
-        
+        attempts: 3
       }
     }
   },
   workerOptions: {
-    abcd: {},
-    abcd2: {}
+    abcd: {
+      concurrency: 1
+    },
+    abcd2: {
+      concurrency: 20
+    }
   }
 })
