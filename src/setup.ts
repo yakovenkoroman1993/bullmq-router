@@ -10,25 +10,32 @@ export function setupBullmqRouter<R extends object>(
   router: R,
   options: {
     connection: ConnectionOptions,
+    prefix?: string,
     workerOptions?: Partial<Record<keyof R, Partial<WorkerOptions>>>
     queueOptions?: Partial<Record<keyof R, Partial<QueueOptions>>>
   }
 ) {
   const {
+    prefix,
     connection,
-    queueOptions,
-    workerOptions,
+    queueOptions: queueOptionsMap,
+    workerOptions: workerOptionsMap,
   } = options
   
   for (const [queueName] of Object.entries(router)) {
+    const queueOptions = queueOptionsMap?.[queueName as keyof R]
+
     QueueManager.addOptions(queueName, {
-      ...queueOptions,
-      connection: queueOptions?.[queueName as keyof R]?.connection ?? connection
+      ...queueOptionsMap,
+      prefix: queueOptions?.prefix ?? prefix,
+      connection: queueOptions?.connection ?? connection,
     })
 
+    const workerOptions = workerOptionsMap?.[queueName as keyof R]
     WorkerManager.addOptions(queueName, {
-      ...workerOptions,
-      connection: workerOptions?.[queueName as keyof R]?.connection ?? connection
+      ...workerOptionsMap,
+      prefix: workerOptions?.prefix ?? prefix,
+      connection: workerOptions?.connection ?? connection,
     })
 
     const worker = WorkerManager.getWorker({ queueName, router });

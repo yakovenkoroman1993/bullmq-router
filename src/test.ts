@@ -15,6 +15,7 @@ const router = createRouter({
 
 setupBullmqRouter(router, {
   connection: {},
+  prefix: "bull",
   queueOptions: {
     abcd: {
       defaultJobOptions: {

@@ -198,6 +198,7 @@ Registers queues and workers for every top-level key in the router.
 |---|---|---|
 | `router` | `object` | The router created by `createRouter` |
 | `connection` | `ConnectionOptions` | Default Redis connection for all queues and workers |
+| `prefix` | `string \| undefined` | Default queue prefix for all queues and workers |
 | `queueOptions` | `Partial<Record<keyof R, QueueOptions>>` | Per-queue overrides |
 | `workerOptions` | `Partial<Record<keyof R, WorkerOptions>>` | Per-worker overrides |
 
