@@ -1,6 +1,6 @@
 import { JOB_CANCELLED_TIME, JOB_DEFINITION, JOB_PATH, JOB_SEPARATOR } from "./constants.js";
 import { Job } from "bullmq";
-import QueueManager from "./queue.js";
+import { QueueManager } from "./queue.js";
 import { JOB_POP } from "./constants.js";
 
 type Add = ReturnType<typeof QueueManager.getQueue>["add"];

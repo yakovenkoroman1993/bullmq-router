@@ -77,8 +77,7 @@ export const router = createRouter({
 import { setupBullmqRouter } from '@yakocloud/bullmq-router'
 import { router } from './router.js'
 
-setupBullmqRouter({
-  router,
+setupBullmqRouter(router, {
   connection: { host: 'localhost', port: 6379 },
   queueOptions: {},
   workerOptions: {},

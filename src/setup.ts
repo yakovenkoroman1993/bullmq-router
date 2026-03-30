@@ -3,20 +3,19 @@ import {
   type QueueOptions,
   type ConnectionOptions
 } from "bullmq";
-import QueueManager from "./queue.js";
-import WorkerManager from "./worker.js";
+import { QueueManager } from "./queue.js";
+import { WorkerManager } from "./worker.js";
 
 export function setupBullmqRouter<R extends object>(
+  router: R,
   options: {
-    router: R
     connection: ConnectionOptions,
-    workerOptions: Partial<Record<keyof R, Partial<QueueBaseOptions>>>
-    queueOptions: Partial<Record<keyof R, Partial<QueueOptions>>>
+    workerOptions?: Partial<Record<keyof R, Partial<QueueBaseOptions>>>
+    queueOptions?: Partial<Record<keyof R, Partial<QueueOptions>>>
   }
 ) {
   const {
     connection,
-    router,
     queueOptions,
     workerOptions,
   } = options
@@ -24,12 +23,12 @@ export function setupBullmqRouter<R extends object>(
   for (const [queueName] of Object.entries(router)) {
     QueueManager.addOptions(queueName, {
       ...queueOptions,
-      connection: queueOptions[queueName as keyof R]?.connection ?? connection
+      connection: queueOptions?.[queueName as keyof R]?.connection ?? connection
     })
 
     WorkerManager.addOptions(queueName, {
       ...workerOptions,
-      connection: workerOptions[queueName as keyof R]?.connection ?? connection
+      connection: workerOptions?.[queueName as keyof R]?.connection ?? connection
     })
 
     const worker = WorkerManager.getWorker({ queueName, router });

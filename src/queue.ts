@@ -1,6 +1,6 @@
 import { Queue, type QueueOptions } from "bullmq";
 
-export default class QueueManager{
+export class QueueManager{
   static #instances: Record<string, Queue> = {}
 
   static #queueOptions: Record<string, QueueOptions | undefined> = {}

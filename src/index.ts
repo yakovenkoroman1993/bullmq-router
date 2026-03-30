@@ -1,3 +1,5 @@
 export { createRouter } from './router.js'
 export { defineJob } from './job.js'
 export { setupBullmqRouter } from './setup.js'
+export { QueueManager } from './queue.js'
+export { WorkerManager } from './worker.js'

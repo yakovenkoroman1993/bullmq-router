@@ -3,7 +3,7 @@ import { JOB_POP } from "./constants.js";
 import { type QueueBaseOptions, Worker, type Job } from "bullmq";
 import { type QueueJobDefinition } from "./job.js";
 
-export default class WorkerManager {
+export class WorkerManager {
   static #instances: Record<string, Worker> = {}
 
   static #workerOptions: Record<string, QueueBaseOptions | undefined> = {}

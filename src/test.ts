@@ -13,9 +13,8 @@ const router = createRouter({
   },
 })
 
-setupBullmqRouter({
+setupBullmqRouter(router, {
   connection: {},
-  router,
   queueOptions: {
     abcd: {
       skipMetasUpdate: true
@@ -30,5 +29,4 @@ setupBullmqRouter({
     abcd: {},
     abcd2: {}
   }
-  
 })
