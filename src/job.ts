@@ -5,7 +5,9 @@ import { JOB_POP } from "./constants.js";
 
 type Add = ReturnType<typeof QueueManager.getQueue>["add"];
 type AddBulk = ReturnType<typeof QueueManager.getQueue>["addBulk"];
+
 export type QueueJobDefinition = ReturnType<ReturnType<typeof defineJob>>;
+export type FullJob = ReturnType<ReturnType<ReturnType<typeof defineJob>>["getFullJob"]>
 
 /**
  * Factory that registers a job processor and returns a configurator function.
