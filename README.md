@@ -2,6 +2,17 @@
 
 Type-safe file-system-style router for [BullMQ](https://docs.bullmq.io/). Define jobs as leaf nodes in a nested object, get fully typed `push`, `replace`, `cancel`, `exec` and more — automatically wired to the right queue and worker.
 
+## Why use bullmq-router?
+
+BullMQ is powerful, but as your system grows, managing jobs becomes messy:
+
+- Job names are just strings → easy to break, hard to refactor  
+- Queues, workers, and handlers are scattered across files  
+- No clear structure for organizing jobs  
+- Deduplication and idempotency require manual effort  
+- Replacing or cancelling jobs is non-trivial  
+- Testing job logic outside the queue is inconvenient  
+
 ## Installation
 
 ```bash
