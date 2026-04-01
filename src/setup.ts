@@ -24,16 +24,15 @@ export function setupBullmqRouter<R extends object>(
   
   for (const [queueName] of Object.entries(router)) {
     const queueOptions = queueOptionsMap?.[queueName as keyof R]
-
     QueueManager.addOptions(queueName, {
-      ...queueOptionsMap,
+      ...queueOptions,
       prefix: queueOptions?.prefix ?? prefix,
       connection: queueOptions?.connection ?? connection,
     })
 
     const workerOptions = workerOptionsMap?.[queueName as keyof R]
     WorkerManager.addOptions(queueName, {
-      ...workerOptionsMap,
+      ...workerOptions,
       prefix: workerOptions?.prefix ?? prefix,
       connection: workerOptions?.connection ?? connection,
     })
