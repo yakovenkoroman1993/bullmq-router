@@ -28,12 +28,9 @@ export default async function (job: Job) {
       | QueueJobDefinition
       | undefined;
 
-    console.warn("!!! definition", definition)
     if (!definition) {
       throw new Error(`No definition for job: ${job.name}`);
     }
-
-    console.warn("!!! definition[JOB_POP]", definition[JOB_POP])
 
     await definition[JOB_POP](job);
   } catch (error) {
