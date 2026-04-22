@@ -26,9 +26,10 @@ export class SandboxWorkerManagerInternal {
       queueName: string
       routerPath: string
       serializedQueueOptions: string
+      execArgv?: string[]
     }
   ) {
-    const { queueName, routerPath, serializedQueueOptions } = options
+    const { queueName, routerPath, execArgv, serializedQueueOptions } = options
     
     const workerOptions = this.#workerOptions[queueName]
 
@@ -47,6 +48,7 @@ export class SandboxWorkerManagerInternal {
         {
           ...workerOptions,
           workerForkOptions: {
+            execArgv,
             ...workerOptions.workerForkOptions,
             env: Object.assign({}, workerOptions.workerForkOptions?.env, {
               QUEUE_ROUTER_PATH: routerPath,
@@ -55,6 +57,7 @@ export class SandboxWorkerManagerInternal {
             }),
           },
           workerThreadsOptions: {
+            execArgv,
             ...workerOptions.workerThreadsOptions,
             env: Object.assign({}, workerOptions.workerThreadsOptions?.env, {
               QUEUE_ROUTER_PATH: routerPath,

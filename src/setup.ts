@@ -17,6 +17,7 @@ export function setupBullmqRouter<R extends object>(
     sandboxOptions?: {
       routerPath: string
       workers: (keyof R)[]
+      execArgv?: string[]
     }
   }
 ) {
@@ -54,6 +55,7 @@ export function setupBullmqRouter<R extends object>(
       worker = SandboxWorkerManager.getWorker({
         queueName,
         routerPath: sandboxOptions.routerPath,
+        execArgv: sandboxOptions.execArgv,
         serializedQueueOptions: JSON.stringify(QueueManager.getOptions(queueName)),
       });
     } else {
