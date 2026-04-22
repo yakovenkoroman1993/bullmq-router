@@ -36,10 +36,10 @@ const workerVocab = setupBullmqRouter(router, {
     }
   },
   sandboxOptions: {
-    // routerPath: process.env.NODE_ENV === "development"
+    // routerPath: process.env.BULLMQ_ROUTER_NODE_ENV === "development"
     //   ? new URL('./test-router.ts', import.meta.url).pathname
     //   : new URL('./test-router.js', import.meta.url).pathname,
-    routerPath: process.env.NODE_ENV === "development"
+    routerPath: process.env.BULLMQ_ROUTER_NODE_ENV === "development"
       ? path.join(__dirname, 'test-router.ts')
       : path.join(__dirname, 'test-router.js'),
     workers: ["abcd"],

@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 let PROCESSOR_FILE_PATH: string
-if (process.env.NODE_ENV === "development") {
+if (process.env.BULLMQ_ROUTER_NODE_ENV === "development") {
   PROCESSOR_FILE_PATH = join(__dirname, "sandbox.ts")
 } else {
   PROCESSOR_FILE_PATH = join(__dirname, "sandbox.js")
