@@ -86,7 +86,7 @@ export const router = createRouter({
 import { setupBullmqRouter } from '@yakocloud/bullmq-router'
 import { router } from './router.js'
 
-setupBullmqRouter(router, {
+const workers = setupBullmqRouter(router, {
   connection: { host: 'localhost', port: 6379 },
 })
 ```
@@ -109,7 +109,6 @@ Defines a job leaf node.
 |---|---|---|
 | `pop` | `(job, jobName, queue) => Promise<void>` | Handler executed when the job is dequeued |
 | `options.jobIdComponents` | `(keyof T)[]` | Fields used to build a deterministic job ID |
-| `options.logsEnabled` | `true` | Enable verbose console logging |
 
 Returns a job definition object with the following methods:
 
@@ -201,9 +200,9 @@ const router = createRouter({
 
 ---
 
-### `setupBullmqRouter(options)`
+### `setupBullmqRouter(router, options)`
 
-Registers queues and workers for every top-level key in the router.
+Registers queues and workers for every top-level key in the router. Returns a map of BullMQ `Worker` instances keyed by queue name, so you can attach additional event listeners or shut workers down individually.
 
 | Option | Type | Description |
 |---|---|---|
@@ -212,8 +211,44 @@ Registers queues and workers for every top-level key in the router.
 | `prefix` | `string \| undefined` | Default queue prefix for all queues and workers |
 | `queueOptions` | `Partial<Record<keyof R, QueueOptions>>` | Per-queue overrides |
 | `workerOptions` | `Partial<Record<keyof R, WorkerOptions>>` | Per-worker overrides |
+| `sandboxOptions` | `{ routerPath: string; workers: (keyof R)[] } \| undefined` | Run selected queues in a sandboxed child process (see below) |
+
+Returns `Record<keyof R, Worker>` — one BullMQ `Worker` per top-level queue key.
+
+```ts
+const workers = setupBullmqRouter(router, { connection })
+
+// Attach extra listeners
+workers.email.on('completed', (job) => console.log(job.id, 'done'))
+
+// Graceful shutdown
+await Promise.all(Object.values(workers).map(w => w.close()))
+```
 
 Each top-level key in the router is treated as a separate BullMQ queue name.
+
+#### Sandbox workers (`sandboxOptions`)
+
+By default, every worker runs in the same Node.js process. For CPU-intensive or crash-prone jobs you can move specific queues into BullMQ's [sandboxed processor](https://docs.bullmq.io/guide/workers/sandboxed-processors) mode — each job executes in an isolated child process.
+
+| Field | Type | Description |
+|---|---|---|
+| `routerPath` | `string` | Absolute path to the file that exports your router as the default export. BullMQ uses this to load the processor in the child process. |
+| `workers` | `(keyof R)[]` | Queue names that should run sandboxed. All other queues continue running in-process. |
+
+```ts
+const workers = setupBullmqRouter(router, {
+  connection: { host: 'localhost', port: 6379 },
+  sandboxOptions: {
+    routerPath: path.join(__dirname, 'router.js')
+    // or
+    // routerPath: new URL('./router.js', import.meta.url).pathname,
+    workers: ['email', 'pdf'],  // these queues run in child processes
+  },
+})
+```
+
+> The file at `routerPath` must export the router as its **default export** — this is the entry point BullMQ forks for each sandboxed job.
 
 ---
 

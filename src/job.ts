@@ -1,7 +1,12 @@
-import { JOB_CANCELLED_TIME, JOB_DEFINITION, JOB_PATH, JOB_SEPARATOR } from "./constants.js";
+import {
+  JOB_CANCELLED_TIME,
+  JOB_DEFINITION,
+  JOB_SEPARATOR,
+  JOB_PATH,
+  JOB_POP
+} from "./constants.js";
 import { Job } from "bullmq";
 import { QueueManager } from "./queue.js";
-import { JOB_POP } from "./constants.js";
 
 type Add = ReturnType<typeof QueueManager.getQueue>["add"];
 type AddBulk = ReturnType<typeof QueueManager.getQueue>["addBulk"];
@@ -25,13 +30,11 @@ export function defineJob<T>(
   /**
    * Configures and returns a job definition object (leaf node in the router tree).
    *
-   * @param definitionOptions.logsEnabled      - Enable verbose console logging for this job
    * @param definitionOptions.jobIdComponents  - Data fields used to build a deterministic job ID.
    *                                             When omitted, BullMQ generates the ID automatically.
    */
   return function <K extends keyof T>(
     definitionOptions: {
-      logsEnabled?: true;
       jobIdComponents?: K[];
     } = {}
   ) {
@@ -200,27 +203,15 @@ export function defineJob<T>(
               job.data[JOB_CANCELLED_TIME]
             }`
           );
-          if (definitionOptions.logsEnabled) {
-            console.log(
-              `[Queue] [Job "${jobName}"] ignored. Reason: cancelled at ${job.data[JOB_CANCELLED_TIME]}`,
-              job.data
-            );
-          }
 
           return; // BullMQ transitions: WAITING -> COMPLETED
         }
 
         job.log(`[${new Date().toISOString()}]: Started.`);
-        if (definitionOptions.logsEnabled) {
-          console.log(`[Queue] [Job "${jobName}"] started`, job.data);
-        }
-
+        
         await pop(job, jobName, queue);
 
         job.log(`[${new Date().toISOString()}]: Finished.`);
-        if (definitionOptions.logsEnabled) {
-          console.log(`[Queue] [Job "${jobName}"] finished`, job.data);
-        }
       },
 
       /**

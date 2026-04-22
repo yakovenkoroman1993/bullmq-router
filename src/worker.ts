@@ -22,8 +22,12 @@ export class WorkerManagerInternal {
     
     const workerOptions = this.#workerOptions[queueName]
 
-    if (!workerOptions?.connection) {
-      throw new Error("Queue connection is not defined")
+    if (!workerOptions) {
+      throw new Error(`Worker options not found for queue: ${queueName}`)
+    }
+    
+    if (!workerOptions.connection) {
+      throw new Error(`Redis connection is not defined for queue: ${queueName}`)
     }
 
     if (!this.#instances[queueName]) {

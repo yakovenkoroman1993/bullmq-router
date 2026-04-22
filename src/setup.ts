@@ -5,6 +5,7 @@ import {
 } from "bullmq";
 import { QueueManager } from "./queue.js";
 import { WorkerManager } from "./worker.js";
+import { SandboxWorkerManager } from "./sandbox-worker.js";
 
 export function setupBullmqRouter<R extends object>(
   router: R,
@@ -13,31 +14,59 @@ export function setupBullmqRouter<R extends object>(
     prefix?: string,
     workerOptions?: Partial<Record<keyof R, Partial<WorkerOptions>>>
     queueOptions?: Partial<Record<keyof R, Partial<QueueOptions>>>
+    sandboxOptions?: {
+      routerPath: string
+      workers: (keyof R)[]
+    }
   }
 ) {
   const {
     prefix,
     connection,
-    queueOptions: queueOptionsMap,
-    workerOptions: workerOptionsMap,
+    queueOptions: queueOptionsVocab,
+    workerOptions: workerOptionsVocab,
+    sandboxOptions,
   } = options
+
+  const workerVocab = {} as Record<keyof R, ReturnType<typeof WorkerManager.getWorker>>
   
-  for (const [queueName] of Object.entries(router)) {
-    const queueOptions = queueOptionsMap?.[queueName as keyof R]
+  for (let [queueName] of Object.entries(router)) {
+    const queueKey = queueName as keyof R
+
+    const queueOptions = queueOptionsVocab?.[queueKey]
     QueueManager.addOptions(queueName, {
       ...queueOptions,
       prefix: queueOptions?.prefix ?? prefix,
       connection: queueOptions?.connection ?? connection,
     })
 
-    const workerOptions = workerOptionsMap?.[queueName as keyof R]
-    WorkerManager.addOptions(queueName, {
-      ...workerOptions,
-      prefix: workerOptions?.prefix ?? prefix,
-      connection: workerOptions?.connection ?? connection,
-    })
+    const workerOptions = workerOptionsVocab?.[queueKey]
 
-    const worker = WorkerManager.getWorker({ queueName, router });
+    let worker: ReturnType<typeof WorkerManager.getWorker>
+    
+    if (sandboxOptions?.workers.includes(queueKey)) {
+      SandboxWorkerManager.addOptions(queueName, {
+        ...workerOptions,
+        prefix: workerOptions?.prefix ?? prefix,
+        connection: workerOptions?.connection ?? connection,
+      })
+
+      worker = SandboxWorkerManager.getWorker({
+        queueName,
+        routerPath: sandboxOptions.routerPath,
+        serializedQueueOptions: JSON.stringify(QueueManager.getOptions(queueName)),
+      });
+    } else {
+      WorkerManager.addOptions(queueName, {
+        ...workerOptions,
+        prefix: workerOptions?.prefix ?? prefix,
+        connection: workerOptions?.connection ?? connection,
+      })
+      
+      worker = WorkerManager.getWorker({ queueName, router });
+    }
+
+    workerVocab[queueKey] = worker
 
     worker.on("failed", (job, err) => {
       console.log(
@@ -45,4 +74,6 @@ export function setupBullmqRouter<R extends object>(
       );
     });
   }
+
+  return workerVocab
 }

@@ -7,12 +7,24 @@ class QueueManagerInternal {
   addOptions(queueName: string, options: QueueOptions) {
     this.#queueOptions[queueName] = options
   }
+  
+  getOptions(queueName: string) {
+    return this.#queueOptions[queueName]
+  }
+  
+  hasOptions(queueName: string) {
+    return typeof this.#queueOptions[queueName] !== "undefined"
+  }
 
   getQueue(queueName: string) {
     const queueOptions = this.#queueOptions[queueName]
 
-    if (!queueOptions?.connection) {
-      throw new Error("Queue connection is not defined")
+    if (!queueOptions) {
+      throw new Error(`Queue options not found for queue: ${queueName}`)
+    }
+    
+    if (!queueOptions.connection) {
+      throw new Error(`Redis connection is not defined for queue: ${queueName}`)
     }
 
     if (!this.#instances[queueName]) {

@@ -1,6 +1,6 @@
 {
   "name": "@yakocloud/bullmq-router",
-  "version": "1.0.12",
+  "version": "2.0.1",
   "description": "Bullmq router",
   "type": "module",
   "main": "dist/index.js",
@@ -14,10 +14,13 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
+    "start": "node ./dist/main.js",
+    "dev": "NODE_ENV=development tsx ./src/main.ts",
     "type-check": "tsc --project tsconfig.json"
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.3"
   },
   "peerDependencies": {
