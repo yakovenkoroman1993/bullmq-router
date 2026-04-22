@@ -211,7 +211,7 @@ Registers queues and workers for every top-level key in the router. Returns a ma
 | `prefix` | `string \| undefined` | Default queue prefix for all queues and workers |
 | `queueOptions` | `Partial<Record<keyof R, QueueOptions>>` | Per-queue overrides |
 | `workerOptions` | `Partial<Record<keyof R, WorkerOptions>>` | Per-worker overrides |
-| `sandboxOptions` | `{ routerPath: string; workers: (keyof R)[] } \| undefined` | Run selected queues in a sandboxed child process (see below) |
+| `sandboxOptions` | `{ routerPath: string; workers: (keyof R)[]; execArgv?: string[] } \| undefined` | Run selected queues in a sandboxed child process (see below) |
 
 Returns `Record<keyof R, Worker>` — one BullMQ `Worker` per top-level queue key.
 
@@ -244,6 +244,7 @@ const workers = setupBullmqRouter(router, {
     // or
     // routerPath: new URL('./router.js', import.meta.url).pathname,
     workers: ['email', 'pdf'],  // these queues run in child processes
+    execArgv: process.env.NODE_ENV === "production" ? undefined : ['--import', 'tsx'],
   },
 })
 ```
