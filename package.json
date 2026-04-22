@@ -1,6 +1,6 @@
 {
   "name": "@yakocloud/bullmq-router",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Bullmq router",
   "type": "module",
   "main": "dist/index.js",
@@ -11,6 +11,14 @@
   ],
   "engines": {
     "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yakovenkoroman1993/bullmq-router"
+  },
+  "homepage": "https://github.com/yakovenkoroman1993/bullmq-router#readme",
+  "bugs": {
+    "url": "https://github.com/yakovenkoroman1993/bullmq-router/issues"
   },
   "scripts": {
     "build": "tsc",
