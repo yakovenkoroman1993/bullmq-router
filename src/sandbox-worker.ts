@@ -2,15 +2,12 @@ import { Worker, type WorkerOptions } from "bullmq";
 import { join, dirname } from "node:path"
 import { fileURLToPath } from 'node:url'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const filename = fileURLToPath(import.meta.url)
 
-let PROCESSOR_FILE_PATH: string
-if (process.env.BULLMQ_ROUTER_NODE_ENV === "development") {
-  PROCESSOR_FILE_PATH = join(__dirname, "sandbox.ts")
-} else {
-  PROCESSOR_FILE_PATH = join(__dirname, "sandbox.js")
-}
+const PROCESSOR_FILE_PATH = join(
+  dirname(filename),
+  process.env.BULLMQ_ROUTER_NODE_ENV === "development" ? "sandbox.ts" : "sandbox.js"
+)
 
 export class SandboxWorkerManagerInternal {
   #instances: Record<string, Worker> = {}

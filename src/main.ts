@@ -4,8 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 import router from "./test-router.js";
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const filename = fileURLToPath(import.meta.url)
 
 const workerVocab = setupBullmqRouter(router, {
   connection: {
@@ -39,9 +38,14 @@ const workerVocab = setupBullmqRouter(router, {
     // routerPath: process.env.BULLMQ_ROUTER_NODE_ENV === "development"
     //   ? new URL('./test-router.ts', import.meta.url).pathname
     //   : new URL('./test-router.js', import.meta.url).pathname,
-    routerPath: process.env.BULLMQ_ROUTER_NODE_ENV === "development"
-      ? path.join(__dirname, 'test-router.ts')
-      : path.join(__dirname, 'test-router.js'),
+    routerPath: 
+      path.join(
+        dirname(filename),
+        process.env.BULLMQ_ROUTER_NODE_ENV === "development"
+          ? "test-router.ts"
+          : "test-router.js"
+      ),
+      
     workers: ["abcd"],
   },
 })
