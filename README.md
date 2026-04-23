@@ -235,6 +235,7 @@ By default, every worker runs in the same Node.js process. For CPU-intensive or 
 |---|---|---|
 | `routerPath` | `string` | Absolute path to the file that exports your router as the default export. BullMQ uses this to load the processor in the child process. |
 | `workers` | `(keyof R)[]` | Queue names that should run sandboxed. All other queues continue running in-process. |
+| `execArgv` | `string[] | undefined` | array of additional Node.js runtime arguments passed to the Node.js process. |
 
 ```ts
 const workers = setupBullmqRouter(router, {
