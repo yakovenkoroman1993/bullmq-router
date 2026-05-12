@@ -209,6 +209,7 @@ Registers queues and workers for every top-level key in the router. Returns a ma
 | `router` | `object` | The router created by `createRouter` |
 | `connection` | `ConnectionOptions` | Default Redis connection for all queues and workers |
 | `prefix` | `string \| undefined` | Default queue prefix for all queues and workers |
+| `workerWrapper` | `(processor: Processor) => Processor \| undefined` | Wraps every job processor — use for tracing, logging, or async context (see below) |
 | `queueOptions` | `Partial<Record<keyof R, QueueOptions>>` | Per-queue overrides |
 | `workerOptions` | `Partial<Record<keyof R, WorkerOptions>>` | Per-worker overrides |
 | `sandboxOptions` | `{ routerPath: string; workers: (keyof R)[]; execArgv?: string[] } \| undefined` | Run selected queues in a sandboxed child process (see below) |
@@ -226,6 +227,41 @@ await Promise.all(Object.values(workers).map(w => w.close()))
 ```
 
 Each top-level key in the router is treated as a separate BullMQ queue name.
+
+#### `workerWrapper`
+
+A function that wraps every job processor across all workers. Receives the original processor and returns a new one — applied once per worker, before the job handler runs.
+
+The primary use case is injecting infrastructure concerns (request context, distributed tracing, structured logging) without modifying individual job definitions.
+
+```ts
+const workers = setupBullmqRouter(router, {
+  connection,
+  workerWrapper: (processor) => (job) =>
+    runWithContext(generateContext(), () => processor(job)),
+})
+```
+
+A typical pattern with distributed tracing — propagate a `traceId` from the producer side by storing it in `job.data`, then restore it in the worker:
+
+```ts
+// Producer (HTTP handler) — pass traceId through job data
+await router.email.send.push({
+  to: 'user@example.com',
+  traceId: requestContext.traceId,
+})
+
+// Consumer — restore context from job data
+const workers = setupBullmqRouter(router, {
+  connection,
+  workerWrapper: (processor) => (job) => {
+    const context = generateContext(job.data.traceId)
+    return runWithContext(context, () => processor(job))
+  },
+})
+```
+
+> `workerWrapper` only applies to in-process workers. Sandboxed workers (listed in `sandboxOptions.workers`) run in isolated child processes and are not affected.
 
 #### Sandbox workers (`sandboxOptions`)
 
