@@ -72,13 +72,24 @@ export function setupBullmqRouter<R extends object>(
     }
 
     workerVocab[queueKey] = worker
+  }
+  
+  const gracefulShutdown = async (signal: string) => {
+    console.log(`Received ${signal}, closing server...`);
+    
+    const entries = Object.entries<typeof workerVocab[keyof typeof workerVocab]>(workerVocab)
 
-    worker.on("failed", (job, err) => {
-      console.log(
-        `[Bullmq Router][Worker for ${queueName}] ${job?.id} failed: ${err.message}`
-      );
-    });
+    for (const [queueName, worker] of entries) {
+      console.log(`Closing of worker for "${queueName}"...`)
+      await worker.close();
+      console.log(`Closed worker for "${queueName}".`)
+    }
+
+    process.exit(0);
   }
 
+  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+  
   return workerVocab
 }
