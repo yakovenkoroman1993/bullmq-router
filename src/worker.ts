@@ -1,6 +1,6 @@
 import { get } from "./utils.js";
-import { JOB_POP } from "./constants.js";
-import { Worker, type Job, type WorkerOptions } from "bullmq";
+import { DEFAULT_WORKER_WRAPPER, JOB_POP } from "./constants.js";
+import { Worker, type WorkerOptions } from "bullmq";
 import { type QueueJobDefinition } from "./job.js";
 
 export class WorkerManagerInternal {
@@ -14,11 +14,16 @@ export class WorkerManagerInternal {
 
   getWorker<R extends object>(
     options: {
+      workerWrapper?: typeof DEFAULT_WORKER_WRAPPER
       queueName: string
       router: R
     }
   ) {
-    const { queueName, router } = options
+    const {
+      queueName,
+      router,
+      workerWrapper = DEFAULT_WORKER_WRAPPER
+    } = options
     
     const workerOptions = this.#workerOptions[queueName]
 
@@ -33,7 +38,7 @@ export class WorkerManagerInternal {
     if (!this.#instances[queueName]) {
       this.#instances[queueName] = new Worker(
         queueName,
-        async (job: Job) => {
+        workerWrapper(async (job) => {
           try {
             const definition = get(router, job.name) as
               | QueueJobDefinition
@@ -51,7 +56,7 @@ export class WorkerManagerInternal {
             );
             throw error; // Important! bullmq marks job as failed
           }
-        },
+        }),
         workerOptions
       );
     }
@@ -63,5 +68,5 @@ export class WorkerManagerInternal {
 const GLOBAL_KEY = Symbol.for("bullmq-router.WorkerManager")
 
 export const WorkerManager = (
-  (globalThis as unknown as Record<symbol, WorkerManagerInternal>)[GLOBAL_KEY] ??= new WorkerManagerInternal()
+  (globalThis as Record<symbol, WorkerManagerInternal>)[GLOBAL_KEY] ??= new WorkerManagerInternal()
 )

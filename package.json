@@ -1,6 +1,6 @@
 {
   "name": "@yakocloud/bullmq-router",
-  "version": "2.1.1",
+  "version": "2.2.1",
   "description": "Bullmq router",
   "type": "module",
   "main": "dist/index.js",

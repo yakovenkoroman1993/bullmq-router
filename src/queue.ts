@@ -38,6 +38,6 @@ class QueueManagerInternal {
 const GLOBAL_KEY = Symbol.for("bullmq-router.QueueManager")
 
 export const QueueManager = (
-  (globalThis as unknown as Record<symbol, QueueManagerInternal>)[GLOBAL_KEY] ??= new QueueManagerInternal()
+  (globalThis as Record<symbol, QueueManagerInternal>)[GLOBAL_KEY] ??= new QueueManagerInternal()
 )
 

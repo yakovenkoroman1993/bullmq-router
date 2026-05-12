@@ -1,17 +1,19 @@
 import {
   type QueueOptions,
   type ConnectionOptions,
-  type WorkerOptions
+  type WorkerOptions,
 } from "bullmq";
 import { QueueManager } from "./queue.js";
 import { WorkerManager } from "./worker.js";
 import { SandboxWorkerManager } from "./sandbox-worker.js";
+import { DEFAULT_WORKER_WRAPPER } from "./constants.js";
 
 export function setupBullmqRouter<R extends object>(
   router: R,
   options: {
     connection: ConnectionOptions,
     prefix?: string,
+    workerWrapper?: typeof DEFAULT_WORKER_WRAPPER
     workerOptions?: Partial<Record<keyof R, Partial<WorkerOptions>>>
     queueOptions?: Partial<Record<keyof R, Partial<QueueOptions>>>
     sandboxOptions?: {
@@ -24,6 +26,7 @@ export function setupBullmqRouter<R extends object>(
   const {
     prefix,
     connection,
+    workerWrapper,
     queueOptions: queueOptionsVocab,
     workerOptions: workerOptionsVocab,
     sandboxOptions,
@@ -65,7 +68,7 @@ export function setupBullmqRouter<R extends object>(
         connection: workerOptions?.connection ?? connection,
       })
       
-      worker = WorkerManager.getWorker({ queueName, router });
+      worker = WorkerManager.getWorker({ queueName, router, workerWrapper });
     }
 
     workerVocab[queueKey] = worker

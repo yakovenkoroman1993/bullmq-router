@@ -3,13 +3,18 @@ import { setupBullmqRouter } from "./index.js";
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 import router from "./test-router.js";
+import { generateContext, runWithContext } from "./test/context.js";
 
 const filename = fileURLToPath(import.meta.url)
 
 const workerVocab = setupBullmqRouter(router, {
+  workerWrapper: (processor) => (job) => runWithContext(
+    generateContext(),
+    () => processor(job)
+  ),
   connection: {
     host: "localhost",
-    port: 6381
+    port: 6379
   },
   prefix: "{bull-test}",
   queueOptions: {
@@ -46,7 +51,8 @@ const workerVocab = setupBullmqRouter(router, {
           : "test-router.js"
       ),
       
-    workers: ["abcd"],
+    // workers: ["abcd"],
+    workers: [],
   },
 })
 

@@ -73,5 +73,5 @@ export class SandboxWorkerManagerInternal {
 const GLOBAL_KEY = Symbol.for("bullmq-router.SandboxWorkerManager")
 
 export const SandboxWorkerManager = (
-  (globalThis as unknown as Record<symbol, SandboxWorkerManagerInternal>)[GLOBAL_KEY] ??= new SandboxWorkerManagerInternal()
+  (globalThis as Record<symbol, SandboxWorkerManagerInternal>)[GLOBAL_KEY] ??= new SandboxWorkerManagerInternal()
 )
