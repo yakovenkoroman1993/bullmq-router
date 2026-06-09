@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2.2.5] - 2026-06-09
+
+### Added
+
+- `queueConnection` and `workerConnection` options in `setupBullmqRouter` — allows separate Redis connections for queues and workers; either pass a single `connection` (shared) or both `queueConnection` + `workerConnection` (exclusive, enforced at the type level)
+  ```ts
+  setupBullmqRouter(router, {
+    queueConnection: redisForQueues,
+    workerConnection: redisForWorkers,
+  })
+  ```
+
+---
+
 ## [2.2.4] - 2026-05-12
 
 ### Removed

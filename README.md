@@ -207,12 +207,40 @@ Registers queues and workers for every top-level key in the router. Returns a ma
 | Option | Type | Description |
 |---|---|---|
 | `router` | `object` | The router created by `createRouter` |
-| `connection` | `ConnectionOptions` | Default Redis connection for all queues and workers |
+| `connection` | `ConnectionOptions` | Shared Redis connection for all queues **and** workers. Mutually exclusive with `queueConnection` / `workerConnection`. |
+| `queueConnection` | `ConnectionOptions` | Redis connection used only for queues. Must be paired with `workerConnection`. |
+| `workerConnection` | `ConnectionOptions` | Redis connection used only for workers. Must be paired with `queueConnection`. |
 | `prefix` | `string \| undefined` | Default queue prefix for all queues and workers |
 | `workerWrapper` | `(processor: Processor) => Processor \| undefined` | Wraps every job processor — use for tracing, logging, or async context (see below) |
 | `queueOptions` | `Partial<Record<keyof R, QueueOptions>>` | Per-queue overrides |
 | `workerOptions` | `Partial<Record<keyof R, WorkerOptions>>` | Per-worker overrides |
 | `sandboxOptions` | `{ routerPath: string; workers: (keyof R)[]; execArgv?: string[] } \| undefined` | Run selected queues in a sandboxed child process (see below) |
+
+Pass a single `connection` to share one Redis client, or `queueConnection` + `workerConnection` to use separate clients (useful when queues and workers connect to different Redis instances or need different connection pool settings):
+
+```ts
+// Shared connection (shorthand)
+const workers = setupBullmqRouter(router, {
+  connection: { 
+    host: 'localhost', 
+    port: 6379 
+  },
+})
+
+// Separate connections
+const workers = setupBullmqRouter(router, {
+  queueConnection: { 
+    host: 'redis-queues', 
+    port: 6379,
+    enableOfflineQueue: false, // That will make the Queue calls fail quickly while leaving the Workers to wait as needed until the connection has been re-established.
+  },
+  workerConnection: { 
+    host: 'redis-workers', 
+    port: 6379,
+    maxRetriesPerRequest: null, // This option sets a limit on the number of times a retry on a failed request will be performed. For Workers using ioredis, it is important to set this option to null. 
+  },
+})
+```
 
 Returns `Record<keyof R, Worker>` — one BullMQ `Worker` per top-level queue key.
 

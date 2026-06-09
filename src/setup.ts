@@ -10,8 +10,18 @@ import { DEFAULT_WORKER_WRAPPER } from "./constants.js";
 
 export function setupBullmqRouter<R extends object>(
   router: R,
-  options: {
-    connection: ConnectionOptions,
+  options: (
+    | {
+      connection: ConnectionOptions
+      queueConnection?: ConnectionOptions
+      workerConnection?: ConnectionOptions
+    }
+    | {
+      connection?: never
+      queueConnection: ConnectionOptions
+      workerConnection: ConnectionOptions
+    }
+  ) & {
     prefix?: string,
     workerWrapper?: typeof DEFAULT_WORKER_WRAPPER
     workerOptions?: Partial<Record<keyof R, Partial<WorkerOptions>>>
@@ -32,6 +42,9 @@ export function setupBullmqRouter<R extends object>(
     sandboxOptions,
   } = options
 
+  const queueConnection = connection ?? options.queueConnection
+  const workerConnection = connection ?? options.workerConnection
+
   const workerVocab = {} as Record<keyof R, ReturnType<typeof WorkerManager.getWorker>>
   
   for (let [queueName] of Object.entries(router)) {
@@ -41,7 +54,7 @@ export function setupBullmqRouter<R extends object>(
     QueueManager.addOptions(queueName, {
       ...queueOptions,
       prefix: queueOptions?.prefix ?? prefix,
-      connection: queueOptions?.connection ?? connection,
+      connection: queueOptions?.connection ?? queueConnection,
     })
 
     const workerOptions = workerOptionsVocab?.[queueKey]
@@ -52,7 +65,7 @@ export function setupBullmqRouter<R extends object>(
       SandboxWorkerManager.addOptions(queueName, {
         ...workerOptions,
         prefix: workerOptions?.prefix ?? prefix,
-        connection: workerOptions?.connection ?? connection,
+        connection: workerOptions?.connection ?? workerConnection,
       })
 
       worker = SandboxWorkerManager.getWorker({
@@ -65,7 +78,7 @@ export function setupBullmqRouter<R extends object>(
       WorkerManager.addOptions(queueName, {
         ...workerOptions,
         prefix: workerOptions?.prefix ?? prefix,
-        connection: workerOptions?.connection ?? connection,
+        connection: workerOptions?.connection ?? workerConnection,
       })
       
       worker = WorkerManager.getWorker({ queueName, router, workerWrapper });
