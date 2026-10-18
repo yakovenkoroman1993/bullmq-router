@@ -240,7 +240,7 @@ export function defineJob<T>(
       },
 
       /** Fetches a job instance by its data or a raw job ID. Returns undefined if not found. */
-      getJob(
+      async getJob(
         this: {
           [JOB_PATH]: string;
         },
@@ -253,7 +253,10 @@ export function defineJob<T>(
         const jobId = parseJobId(jobName, data);
 
         if (!jobId) {
-          return Promise.resolve(undefined);
+          const delayed = await queue.getDelayed()
+          return Promise.resolve(
+            delayed.find(j => j.name === jobName)
+          );
         }
 
         return queue.getJob(jobId);
