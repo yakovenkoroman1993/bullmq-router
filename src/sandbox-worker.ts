@@ -22,7 +22,7 @@ export class SandboxWorkerManagerInternal {
     options: {
       queueName: string
       routerPath: string
-      serializedQueueOptions: string
+      serializedQueueOptions: string | undefined
       execArgv?: string[]
     }
   ) {
@@ -39,6 +39,7 @@ export class SandboxWorkerManagerInternal {
     }
 
     if (!this.#instances[queueName]) {
+      // `env` replaces the child's environment entirely, so start from process.env.
       this.#instances[queueName] = new Worker(
         queueName,
         PROCESSOR_FILE_PATH,
@@ -47,7 +48,7 @@ export class SandboxWorkerManagerInternal {
           workerForkOptions: {
             execArgv,
             ...workerOptions.workerForkOptions,
-            env: Object.assign({}, workerOptions.workerForkOptions?.env, {
+            env: Object.assign({}, process.env, workerOptions.workerForkOptions?.env, {
               QUEUE_ROUTER_PATH: routerPath,
               QUEUE_NAME: queueName,
               QUEUE_OPTIONS: serializedQueueOptions,
@@ -56,7 +57,7 @@ export class SandboxWorkerManagerInternal {
           workerThreadsOptions: {
             execArgv,
             ...workerOptions.workerThreadsOptions,
-            env: Object.assign({}, workerOptions.workerThreadsOptions?.env, {
+            env: Object.assign({}, process.env, workerOptions.workerThreadsOptions?.env, {
               QUEUE_ROUTER_PATH: routerPath,
               QUEUE_NAME: queueName,
               QUEUE_OPTIONS: serializedQueueOptions,

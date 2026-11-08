@@ -7,6 +7,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [3.0.1] - 2026-11-08
+
+### Changed
+
+- **Breaking:** peer dependency `bullmq` raised from `^5.71.1` to `^6.7.1`. In bullmq 6, `ioredis` is an optional peer and is no longer installed. Without it, plain connection options (`{ host, port }`) don't work; pass an already-created client instead, such as [node-redis](https://github.com/redis/node-redis) (`redis` ≥ 5), [iovalkey](https://github.com/valkey-io/iovalkey) (`Redis` or `Cluster`), or ioredis if you install it yourself
+  ```ts
+  import { createClient } from "redis"
+
+  const connection = createClient({ url: "redis://localhost:6379" })
+  await connection.connect()
+
+  setupBullmqRouter(router, { connection })
+  ```
+- Worker connections that are client instances must set `maxRetriesPerRequest: null`, or bullmq throws `Your redis options maxRetriesPerRequest must be null`. A common setup is a shared client for queues and a dedicated client for workers, passed as `queueConnection` + `workerConnection`
+- Sandboxed workers: `connection` is no longer sent to the child process when it is a client instance, because a client can't be serialized (an iovalkey `Cluster` previously made `setupBullmqRouter` throw `Converting circular structure to JSON`). The router module loaded in the child must provide the connection itself; the parent's other queue options (such as `prefix`) still apply
+  ```ts
+  // router module passed as sandboxOptions.routerPath
+  QueueManager.addOptions("my-queue", { connection: createRedisClient() })
+
+  export default router
+  ```
+- Sandboxed workers: queue options the router module sets in the child now take priority, and the parent's serialized options fill in the rest. Previously, options set in the child replaced the parent's entirely, so `prefix` was lost
+
+### Fixed
+
+- Sandboxed workers now inherit the parent's environment variables. Previously the child got only `QUEUE_ROUTER_PATH`, `QUEUE_NAME` and `QUEUE_OPTIONS`, with no `PATH`, `REDIS_URL`, `NODE_ENV`, etc.
+- `tsconfig.json` sets `"types": ["node"]`, since TypeScript 7 no longer includes `@types/*` automatically and the build failed
+
+---
+
+## [2.2.7] - 2026-10-19
+
+### Fixed
+
+- `getJob()` without `jobIdComponents` now returns the first delayed job with the same name, instead of always returning `undefined`
+
+### Changed
+
+- Upgraded TypeScript to 7.0.2
+
+---
+
 ## [2.2.5] - 2026-06-09
 
 ### Added

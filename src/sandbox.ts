@@ -18,9 +18,10 @@ const router = await import(process.env.QUEUE_ROUTER_PATH)
 assert(process.env.QUEUE_OPTIONS, "Make sure that QUEUE_OPTIONS is provided")
 const queueOptions = JSON.parse(process.env.QUEUE_OPTIONS)
 
-if (!QueueManager.hasOptions(queueName)) {
-  QueueManager.addOptions(queueName, queueOptions)
-}
+// Options set by the router module in this process win; the parent's serialized
+// options fill the gaps. Client instances can't be serialized, so when the parent
+// uses one, the router module must provide `connection` (e.g. its own client).
+QueueManager.addOptions(queueName, { ...queueOptions, ...QueueManager.getOptions(queueName) })
 
 export default async function (job: Job) {
   try {

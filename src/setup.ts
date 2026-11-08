@@ -72,7 +72,7 @@ export function setupBullmqRouter<R extends object>(
         queueName,
         routerPath: sandboxOptions.routerPath,
         execArgv: sandboxOptions.execArgv,
-        serializedQueueOptions: JSON.stringify(QueueManager.getOptions(queueName)),
+        serializedQueueOptions: serializeQueueOptions(QueueManager.getOptions(queueName)),
       });
     } else {
       WorkerManager.addOptions(queueName, {
@@ -88,4 +88,20 @@ export function setupBullmqRouter<R extends object>(
   }
   
   return workerVocab
+}
+
+/**
+ * Client instances (ioredis/iovalkey Redis or Cluster, node-redis) can't cross the
+ * process boundary to a sandboxed worker and may not even be JSON-serializable
+ * (a Cluster is circular), so only plain connection options are forwarded.
+ */
+function serializeQueueOptions(queueOptions: QueueOptions | undefined) {
+  if (queueOptions === undefined) {
+    return undefined
+  }
+
+  const { connection, ...rest } = queueOptions
+  const isClientInstance = typeof (connection as { duplicate?: unknown } | undefined)?.duplicate === "function"
+
+  return JSON.stringify(isClientInstance ? rest : queueOptions)
 }
